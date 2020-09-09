@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useContext } from 'react';
 import { UserContext } from '../../App';
 import { useHistory, useLocation } from 'react-router-dom';
-import { initializeLoginFramework, handleGoogleSignIn, handleSignOut, handleFbSignIn } from './loginManager';
+import { initializeLoginFramework, handleGoogleSignIn, handleSignOut, handleFbSignIn, createUserWithEmailAndPassword, signInWithEmailAndPassword } from './loginManager';
 
 
 
@@ -26,18 +26,14 @@ function Login() {
   const googleSignIn = () => {
       handleGoogleSignIn()
       .then(res => {
-        setUser(res);
-        setLoggedInUser(res);
-        history.replace(from);
+        handleResponse(res, true);
       })
   }
 
   const fbSignIn = () => {
       handleFbSignIn()
       .then(res => {
-        setUser(res);
-        setLoggedInUser(res);
-        history.replace(from);
+        handleResponse(res, true);
       })
 
   }
@@ -45,9 +41,16 @@ function Login() {
   const signOut = () => {
       handleSignOut()
       .then(res => {
-          setUser(res);
-          setLoggedInUser(res);
+          handleResponse(res, false);
       })
+  }
+
+  const handleResponse = (res, redirect) =>{
+    setUser(res);
+    setLoggedInUser(res);
+    if(redirect){
+        history.replace(from);
+    }
   }
 
   const handleBlur = (e) => {
@@ -68,13 +71,18 @@ function Login() {
   }
   const handleSubmit = (e) => {
     if(newUser && user.email && user.password){
-      
+      createUserWithEmailAndPassword(user.name, user.email, user.password)
+      .then(res => {
+        handleResponse(res, true);
+      })
     }
 
     if(!newUser && user.email && user.password){
-      
+      signInWithEmailAndPassword(user.email, user.password)
+      .then(res => {
+        handleResponse(res, true);
+      })
     }
-
     e.preventDefault();
   }
 
